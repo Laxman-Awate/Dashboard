@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SMART GLOVE – Health Monitoring Dashboard</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Chart.js for Live Graph -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg-page: #EDF2F7;
+      --header-bg: #0F172A;
+      --card-bg: #FFFFFF;
+      --text-main: #1E293B;
+      --text-muted: #64748B;
+      --border-color: #E2E8F0;
+      --primary: #2563EB;
+      --primary-hover: #1D4ED8;
+      --green: #10B981;
+      --red: #EF4444;
+      --orange: #F97316;
+      --blue: #3B82F6;
+      --purple: #8B5CF6;
+      --cyan: #0EA5E9;
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 1. HEADER (Dark navy-blue background) */
+    header {
+      background: var(--header-bg);
+      color: #FFFFFF;
+      text-align: center;
+      padding: 24px 16px;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+    }
+
+    header h1 {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      color: #FFFFFF;
+    }
+
+    header p {
+      font-size: 14px;
+      color: #94A3B8;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+
+    /* MAIN CONTAINER */
+    main {
+      max-width: 1140px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* DEMO MODE ALERT BANNER */
+    .demo-banner {
+      display: none;
+      background: #FEF3C7;
+      border: 1px solid #FCD34D;
+      color: #92400E;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .demo-banner.active {
+      display: flex;
+    }
+
+    .demo-badge-tag {
+      background: #F59E0B;
+      color: #FFFFFF;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* 2. CONNECTION PANEL */
+    .connection-panel {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .connection-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .ip-input-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .ip-input-group label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .ip-input {
+      flex: 1;
+      padding: 9px 14px;
+      border: 1.5px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .ip-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .btn {
+      padding: 9px 20px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #FFFFFF;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-danger {
+      background: #DC2626;
+      color: #FFFFFF;
+    }
+
+    .btn-danger:hover {
+      background: #B91C1C;
+    }
+
+    .btn-secondary {
+      background: #F1F5F9;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: #E2E8F0;
+    }
+
+    .status-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* Connection Status Indicator */
+    .connection-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      background: #F1F5F9;
+      color: var(--text-muted);
+    }
+
+    .connection-badge.connected {
+      background: #DCFCE7;
+      color: #166534;
+    }
+
+    .connection-badge.disconnected {
+      background: #FEE2E2;
+      color: #991B1B;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #94A3B8;
+    }
+
+    .connected .dot {
+      background: #10B981;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+    }
+
+    .disconnected .dot {
+      background: #EF4444;
+    }
+
+    .helper-text {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* 3. SENSOR CARDS (6 Cards arranged in responsive grid) */
+    .sensor-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    /* First row: 4 cards. Second row: remaining 2 cards span nicely */
+    .sensor-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 22px 20px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .sensor-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px -2px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .card-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .icon-hr { background: #FEE2E2; color: #EF4444; }
+    .icon-temp { background: #FFEDD5; color: #F97316; }
+    .icon-volt { background: #D1FAE5; color: #10B981; }
+    .icon-servo { background: #DBEAFE; color: #3B82F6; }
+    .icon-buzzer { background: #EDE9FE; color: #8B5CF6; }
+    .icon-wifi { background: #E0F2FE; color: #0284C7; }
+
+    .card-body {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .card-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .card-unit {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    /* Status badge inside card for Buzzer / Wi-Fi */
+    .status-pill {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .pill-on { background: #DCFCE7; color: #15803D; }
+    .pill-off { background: #F1F5F9; color: #64748B; }
+    .pill-online { background: #DCFCE7; color: #15803D; }
+    .pill-offline { background: #FEE2E2; color: #B91C1C; }
+
+    /* 4. LIVE HEART RATE GRAPH PANEL */
+    .chart-panel {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .chart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chart-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chart-pulse-dot {
+      width: 10px;
+      height: 10px;
+      background: #EF4444;
+      border-radius: 50%;
+      animation: pulse 1.6s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+      70% { transform: scale(1.15); box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    .last-update {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .chart-wrapper {
+      position: relative;
+      height: 280px;
+      width: 100%;
+    }
+
+    .empty-chart-state {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 8px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--text-muted);
+      font-size: 14px;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .empty-chart-state.active {
+      display: flex;
+    }
+
+    .empty-chart-state svg {
+      width: 48px;
+      height: 48px;
+      stroke: #94A3B8;
+    }
+
+    /* RESPONSIVE LAYOUT */
+    @media (max-width: 960px) {
+      .sensor-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      header h1 { font-size: 24px; }
+      .sensor-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .connection-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .chart-wrapper {
+        height: 220px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .sensor-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <h1>SMART GLOVE</h1>
+    <p>Health Monitoring Dashboard</p>
+  </header>
+
+  <!-- MAIN DASHBOARD CONTENT -->
+  <main>
+
+    <!-- DEMO MODE BANNER -->
+    <div id="demoBanner" class="demo-banner">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="demo-badge-tag">Demo Mode</span>
+        <span>Displaying simulated Smart Glove sensor telemetry. Switch off demo mode when connecting real ESP32 hardware.</span>
+      </div>
+      <button id="disableDemoBtn" class="btn btn-secondary" style="font-size: 11.5px; padding: 4px 10px;">Switch to Real Hardware</button>
+    </div>
+
+    <!-- 1. CONNECTION PANEL -->
+    <section class="connection-panel">
+      <div class="connection-row">
+        <div class="ip-input-group">
+          <label for="espIp">ESP32 IP Address:</label>
+          <input type="text" id="espIp" class="ip-input" placeholder="e.g. 192.168.4.1" value="192.168.4.1">
+          <button id="connectBtn" class="btn btn-primary">Connect</button>
+        </div>
+
+        <div class="status-group">
+          <!-- Connection Indicator -->
+          <div id="connectionBadge" class="connection-badge disconnected">
+            <span class="dot"></span>
+            <span id="connectionText">Not Connected</span>
+          </div>
+
+          <!-- Demo Mode Toggle -->
+          <button id="demoToggleBtn" class="btn btn-secondary" title="Toggle simulated test telemetry">
+            Demo Mode: <strong id="demoToggleText" style="margin-left: 4px;">ON</strong>
+          </button>
+        </div>
+      </div>
+
+      <!-- Wi-Fi Network Advisory Note -->
+      <div class="helper-text">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <span>The device and browser must be connected to the same Wi-Fi network when using a local ESP32 server.</span>
+      </div>
+    </section>
+
+    <!-- 2. SENSOR CARDS (6 CARDS GRID) -->
+    <section class="sensor-grid">
+
+      <!-- Card 1: Heart Rate -->
+      <div class="sensor-card">
+        <div class="card-top">
+          <span class="card-title">Heart Rate</span>
+          <div class="card-icon icon-hr">
+            <!-- Heart Icon -->
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="card-body">
+          <span id="valHeartRate" class="card-value">--</span>
+          <span class="card-unit">BPM</span>
+        </div>
+      </div>
+
+      <!-- Card 2: Temperature -->
+      <div class="sensor-card">
+        <div class="card-top">
+          <span class="card-title">Temperature</span>
+          <div class="card-icon icon-temp">
+            <!-- Thermometer Icon -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="card-body">
+          <span id="valTemperature" class="card-value">--</span>
+          <span class="card-unit">°C</span>
+        </div>
+      </div>
+
+      <!-- Card 3: Voltage -->
+      <div class="sensor-card">
+        <div class="card-top">
+          <span class="card-title">Voltage</span>
+          <div class="card-icon icon-volt">
+            <!-- Battery Icon -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="7" width="16" height="10" rx="2" ry="2"></rect>
+              <line x1="22" y1="11" x2="22" y2="13"></line>
+              <line x1="6" y1="11" x2="6" y2="13"></line>
+              <line x1="10" y1="11" x2="10" y2="13"></line>
+            </svg>
+          </div>
+        </div>
+        <div class="card-body">
+          <span id="valVoltage" class="card-value">--</span>
+          <span class="card-unit">V</span>
+        </div>
+      </div>
+
+      <!-- Card 4: Servo Angle -->
+      <div class="sensor-card">
+        <div class="card-top">
+          <span class="card-title">Servo Angle</span>
+          <div class="card-icon icon-servo">
+            <!-- Gear Icon -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="card-body">
+          <span id="valServoAngle" class="card-value">--</span>
+          <span class="card-unit">°</span>
+        </div>
+      </div>
+
+      <!-- Card 5: Buzzer -->
+      <div class="sensor-card">
+        <div class="card-top">
+          <span class="card-title">Buzzer</span>
+          <div class="card-icon icon-buzzer">
+            <!-- Bell Icon -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="card-body">
+          <span id="badgeBuzzer" class="status-pill pill-off">--</span>
+        </div>
+      </div>
+
+      <!-- Card 6: ESP32 / Wi-Fi -->
+      <div class="sensor-card">
+        <div class="card-top">
+          <span class="card-title">ESP32 / Wi-Fi</span>
+          <div class="card-icon icon-wifi">
+            <!-- Wi-Fi Icon -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+              <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+              <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+              <line x1="12" y1="20" x2="12.01" y2="20"></line>
+            </svg>
+          </div>
+        </div>
+        <div class="card-body">
+          <span id="badgeWifi" class="status-pill pill-offline">--</span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 3. LIVE HEART RATE GRAPH PANEL -->
+    <section class="chart-panel">
+      <div class="chart-header">
+        <div class="chart-title">
+          <div class="chart-pulse-dot"></div>
+          <span>Live Heart Rate</span>
+        </div>
+        <span id="lastUpdateText" class="last-update">Last update: --</span>
+      </div>
+
+      <div class="chart-wrapper">
+        <canvas id="heartRateChart"></canvas>
+
+        <!-- Empty state placeholder when no readings available -->
+        <div id="emptyChartState" class="empty-chart-state active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
+          <div>
+            <strong>No heart rate data available</strong>
+            <p style="font-size: 13px; margin-top: 4px;">Connect to your ESP32 Smart Glove or enable Demo Mode to view real-time telemetry.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- DASHBOARD APPLICATION SCRIPT -->
+  <script>
+    (function () {
+      // DOM Elements
+      const espIpInput = document.getElementById('espIp');
+      const connectBtn = document.getElementById('connectBtn');
+      const connectionBadge = document.getElementById('connectionBadge');
+      const connectionText = document.getElementById('connectionText');
+      const demoToggleBtn = document.getElementById('demoToggleBtn');
+      const demoToggleText = document.getElementById('demoToggleText');
+      const demoBanner = document.getElementById('demoBanner');
+      const disableDemoBtn = document.getElementById('disableDemoBtn');
+
+      const valHeartRate = document.getElementById('valHeartRate');
+      const valTemperature = document.getElementById('valTemperature');
+      const valVoltage = document.getElementById('valVoltage');
+      const valServoAngle = document.getElementById('valServoAngle');
+      const badgeBuzzer = document.getElementById('badgeBuzzer');
+      const badgeWifi = document.getElementById('badgeWifi');
+
+      const lastUpdateText = document.getElementById('lastUpdateText');
+      const emptyChartState = document.getElementById('emptyChartState');
+
+      // State
+      let isConnected = false;
+      let isDemoMode = true;
+      let pollingTimer = null;
+      let chartInstance = null;
+      let chartPoints = [];
+      const MAX_POINTS = 25;
+
+      // Initialize Chart.js
+      function initChart() {
+        const ctx = document.getElementById('heartRateChart').getContext('2d');
+        
+        // Gradient fill for sleek pulse wave
+        const gradient = ctx.createLinearGradient(0, 0, 0, 260);
+        gradient.addColorStop(0, 'rgba(239, 68, 68, 0.28)');
+        gradient.addColorStop(1, 'rgba(239, 68, 68, 0.00)');
+
+        chartInstance = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: [],
+            datasets: [{
+              label: 'Heart Rate (BPM)',
+              data: [],
+              borderColor: '#EF4444',
+              backgroundColor: gradient,
+              borderWidth: 2.5,
+              tension: 0.35,
+              fill: true,
+              pointBackgroundColor: '#FFFFFF',
+              pointBorderColor: '#EF4444',
+              pointBorderWidth: 2,
+              pointRadius: 3.5,
+              pointHoverRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+              duration: 400,
+              easing: 'linear'
+            },
+            interaction: {
+              intersect: false,
+              mode: 'index'
+            },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: '#1E293B',
+                titleFont: { size: 12 },
+                bodyFont: { size: 13, weight: 'bold' },
+                padding: 10,
+                displayColors: false,
+                callbacks: {
+                  label: function (context) {
+                    return context.parsed.y + ' BPM';
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: {
+                  display: false,
+                  drawBorder: false
+                },
+                ticks: {
+                  color: '#94A3B8',
+                  font: { size: 11 },
+                  maxRotation: 0,
+                  autoSkip: true,
+                  maxTicksLimit: 7
+                }
+              },
+              y: {
+                min: 50,
+                max: 120,
+                grid: {
+                  color: '#F1F5F9',
+                  drawBorder: false
+                },
+                ticks: {
+                  color: '#94A3B8',
+                  font: { size: 11 },
+                  stepSize: 15,
+                  callback: function (val) {
+                    return val + ' BPM';
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // Fetch Latest Status & Sensor Reading
+      async function fetchLatestReading() {
+        try {
+          const res = await fetch('/api/sensor-data/latest');
+          if (!res.ok) return;
+          const data = await res.json();
+          renderSensors(data);
+        } catch (err) {
+          console.warn('Telemetry fetch error:', err);
+        }
+      }
+
+      // Fetch Heart Rate History
+      async function fetchChartHistory() {
+        try {
+          const res = await fetch('/api/sensor-data/history?limit=' + MAX_POINTS);
+          if (!res.ok) return;
+          const history = await res.json();
+          renderChart(history);
+        } catch (err) {
+          console.warn('History fetch error:', err);
+        }
+      }
+
+      // Render Sensor Cards
+      function renderSensors(d) {
+        if (!d) return;
+
+        // Heart Rate
+        valHeartRate.textContent = (d.heart_rate !== null && d.heart_rate !== undefined) ? d.heart_rate : '--';
+        
+        // Temperature
+        valTemperature.textContent = (d.temperature !== null && d.temperature !== undefined) ? d.temperature : '--';
+        
+        // Voltage
+        valVoltage.textContent = (d.voltage !== null && d.voltage !== undefined) ? d.voltage : '--';
+        
+        // Servo Angle
+        valServoAngle.textContent = (d.servo_angle !== null && d.servo_angle !== undefined) ? d.servo_angle : '--';
+
+        // Buzzer Status
+        if (d.buzzer === null || d.buzzer === undefined) {
+          badgeBuzzer.textContent = '--';
+          badgeBuzzer.className = 'status-pill pill-off';
+        } else if (d.buzzer) {
+          badgeBuzzer.textContent = 'ON';
+          badgeBuzzer.className = 'status-pill pill-on';
+        } else {
+          badgeBuzzer.textContent = 'OFF';
+          badgeBuzzer.className = 'status-pill pill-off';
+        }
+
+        // ESP32 / Wi-Fi Status
+        if (!d.wifi_status || d.wifi_status === 'disconnected') {
+          badgeWifi.textContent = isConnected ? 'Connected' : '--';
+          badgeWifi.className = isConnected ? 'status-pill pill-online' : 'status-pill pill-offline';
+        } else {
+          badgeWifi.textContent = d.wifi_status === 'connected' ? 'Connected' : d.wifi_status;
+          badgeWifi.className = 'status-pill pill-online';
+        }
+
+        // Timestamp
+        if (d.timestamp) {
+          const dateObj = new Date(d.timestamp);
+          const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          lastUpdateText.textContent = `Last update: ${timeStr} ${d.is_demo ? '(Demo Data)' : ''}`;
+        } else {
+          lastUpdateText.textContent = 'Last update: --';
+        }
+      }
+
+      // Render Heart Rate Line Chart
+      function renderChart(history) {
+        if (!chartInstance) return;
+
+        if (!history || history.length === 0) {
+          emptyChartState.classList.add('active');
+          chartInstance.data.labels = [];
+          chartInstance.data.datasets[0].data = [];
+          chartInstance.update();
+          return;
+        }
+
+        emptyChartState.classList.remove('active');
+
+        const labels = history.map(item => {
+          const t = new Date(item.timestamp);
+          return t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        });
+
+        const dataPoints = history.map(item => item.heart_rate);
+
+        chartInstance.data.labels = labels;
+        chartInstance.data.datasets[0].data = dataPoints;
+        chartInstance.update('none'); // smooth render without jerky animation
+      }
+
+      // Sync Connection & Demo Status
+      async function syncConnectionStatus() {
+        try {
+          const res = await fetch('/api/connection/status');
+          if (!res.ok) return;
+          const status = await res.json();
+
+          isConnected = status.is_connected;
+          isDemoMode = status.demo_mode;
+          
+          if (status.esp32_ip) {
+            espIpInput.value = status.esp32_ip;
+          }
+
+          updateConnectionUI();
+        } catch (err) {
+          console.warn('Status sync error:', err);
+        }
+      }
+
+      function updateConnectionUI() {
+        if (isConnected) {
+          connectionBadge.className = 'connection-badge connected';
+          connectionText.textContent = 'Connected';
+          connectBtn.textContent = 'Disconnect';
+          connectBtn.className = 'btn btn-danger';
+        } else {
+          connectionBadge.className = 'connection-badge disconnected';
+          connectionText.textContent = 'Not Connected';
+          connectBtn.textContent = 'Connect';
+          connectBtn.className = 'btn btn-primary';
+        }
+
+        if (isDemoMode) {
+          demoBanner.classList.add('active');
+          demoToggleText.textContent = 'ON';
+          demoToggleText.style.color = '#F59E0B';
+        } else {
+          demoBanner.classList.remove('active');
+          demoToggleText.textContent = 'OFF';
+          demoToggleText.style.color = '#64748B';
+        }
+      }
+
+      // Connect Button Handler
+      connectBtn.addEventListener('click', async () => {
+        const ip = espIpInput.value.trim();
+
+        if (isConnected) {
+          // Disconnect
+          try {
+            await fetch('/api/disconnect', { method: 'POST' });
+            isConnected = false;
+            updateConnectionUI();
+            fetchLatestReading();
+          } catch (err) {
+            alert('Failed to disconnect: ' + err.message);
+          }
+          return;
+        }
+
+        if (!ip) {
+          alert('Please enter an ESP32 IP address (e.g. 192.168.4.1)');
+          return;
+        }
+
+        connectBtn.disabled = true;
+        connectBtn.textContent = 'Connecting...';
+
+        try {
+          const res = await fetch('/api/connect', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ip })
+          });
+          const data = await res.json();
+
+          if (data.connected) {
+            isConnected = true;
+            updateConnectionUI();
+          } else {
+            alert(data.message || 'Could not connect to device.');
+            isConnected = false;
+            updateConnectionUI();
+          }
+        } catch (err) {
+          alert('Connection attempt failed: ' + err.message);
+          isConnected = false;
+          updateConnectionUI();
+        } finally {
+          connectBtn.disabled = false;
+        }
+      });
+
+      // Demo Mode Toggle Button Handler
+      async function handleToggleDemo() {
+        try {
+          const res = await fetch('/api/demo/toggle', { method: 'POST' });
+          const data = await res.json();
+          isDemoMode = data.demo_mode;
+          updateConnectionUI();
+          fetchLatestReading();
+          fetchChartHistory();
+        } catch (err) {
+          alert('Failed to toggle demo mode: ' + err.message);
+        }
+      }
+
+      demoToggleBtn.addEventListener('click', handleToggleDemo);
+      disableDemoBtn.addEventListener('click', handleToggleDemo);
+
+      // Start Polling Loop
+      function startPolling() {
+        initChart();
+        syncConnectionStatus();
+        fetchLatestReading();
+        fetchChartHistory();
+
+        // Refresh telemetry every 1.5 seconds
+        pollingTimer = setInterval(() => {
+          fetchLatestReading();
+          fetchChartHistory();
+        }, 1500);
+      }
+
+      // Boot application on DOM ready
+      document.addEventListener('DOMContentLoaded', startPolling);
+    })();
+  </script>
+</body>
+</html>
+
